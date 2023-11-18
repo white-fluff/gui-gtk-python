@@ -22,6 +22,13 @@ class MainWindow(Gtk.ApplicationWindow):
         
         self.set_default_size(600, 350)
         self.set_title("MyApp")
+
+        GLib.set_application_name("My App")
+
+        # About dialog
+        action = Gio.SimpleAction.new("about", None)
+        action.connect("activate", self.show_about)
+        self.add_action(action)
         
         self.box1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.box2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -74,10 +81,10 @@ class MainWindow(Gtk.ApplicationWindow):
         f.add_mime_type("image/jpeg")
         f.add_mime_type("image/png")
 
-        filters = Gio.ListStore.new(Gtk.FileFilter)  # Create a ListStore with the type Gtk.FileFilter
-        filters.append(f)  # Add the file filter to the ListStore. You could add more.
+        filters = Gio.ListStore.new(Gtk.FileFilter)
+        filters.append(f)
 
-        self.open_dialog.set_filters(filters)  # Set the filters for the open dialog
+        self.open_dialog.set_filters(filters)
         self.open_dialog.set_default_filter(f)
         
         # Boxes
@@ -88,6 +95,28 @@ class MainWindow(Gtk.ApplicationWindow):
         self.box2.append(self.button)
         self.box2.append(self.check)
         self.box2.append(self.switch_box)
+
+        # Menu button
+        action = Gio.SimpleAction.new("something", None)
+        action.connect("activate", self.print_something)
+        self.add_action(action)
+
+        # Create a new menu, containing that action
+        menu = Gio.Menu.new()
+        menu.append("Do Something", "win.something")
+        menu.append("About", "win.about")
+
+        # Create a popover
+        self.popover = Gtk.PopoverMenu()
+        self.popover.set_menu_model(menu)
+
+        # Create a menu button
+        self.hamburger = Gtk.MenuButton()
+        self.hamburger.set_popover(self.popover)
+        self.hamburger.set_icon_name("open-menu-symbolic")
+
+        # Add menu button to the header bar
+        self.header.pack_start(self.hamburger)
 
     def hello_worl(self, button):
         print("Hello world!")
@@ -113,6 +142,41 @@ class MainWindow(Gtk.ApplicationWindow):
                 # Handle loading file from here
         except GLib.Error as error:
             print(f"Error opening file: {error.message}")
+
+    def print_something(self, action, param):
+        print("Something!")
+
+    def show_about(self, action, param):
+        self.about = Gtk.AboutDialog()
+        self.about.set_transient_for(self)
+        self.about.set_modal(self)
+
+        self.about.set_authors(["Konstantin Belopukhov"])
+        self.about.set_copyright("Copyright 2023 Konstantin Belopukhov")
+        self.about.set_license_type(Gtk.License.GPL_3_0)
+        self.about.set_website("http://white-fluff.com")
+        self.about.set_website_label("My Website")
+        self.about.set_version("1.0")
+        self.about.set_logo_icon_name("com.white-fluff.MyGtkApp")
+
+        self.about.set_visible(True)
+        
+        # Libadwaita variant
+        # dialog = Adw.AboutWindow(transient_for=app.get_active_window()) 
+        # dialog.set_application_name("App name") 
+        # dialog.set_version("1.0") 
+        # dialog.set_developer_name("Developer") 
+        # dialog.set_license_type(Gtk.License(Gtk.License.GPL_3_0)) 
+        # dialog.set_comments("Adw about Window example") 
+        # dialog.set_website("https://github.com/Tailko2k/GTK4PythonTutorial") 
+        # dialog.set_issue_url("https://github.com/Tailko2k/GTK4PythonTutorial/issues") 
+        # dialog.add_credit_section("Contributors", ["Name1 url"]) 
+        # dialog.set_translator_credits("Name1 url") 
+        # dialog.set_copyright("© 2022 developer") 
+        # dialog.set_developers(["Developer"]) 
+        # dialog.set_application_icon("com.github.devname.appname") # icon must be uploaded in ~/.local/share/icons or /usr/share/icons
+
+        # dialog.set_visible(True)
 
 
 class MyApp(Adw.Application):
